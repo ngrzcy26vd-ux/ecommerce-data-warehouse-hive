@@ -24,6 +24,29 @@
 | `dws.dws_product` | 一个商品 | 11 | 无（全量覆盖） |
 | `ads.ads_sales_daily` | 一天 | 11 组 | 11 个日期值 |
 | `ads.ads_sales_weekly` | 一周 | 3 组 | 无 |
+| `ads.ads_user_repurchase` | 一个月 | 1 组 | 无（月度复购率 0.3333） |
+| `ads.ads_user_retention` | 一个首单日 cohort | 10 组 | 无（d1/d3/d7 留存率） |
+| `ads.ads_user_segment` | 一个用户 | 10 组 | 无（五档价值分层） |
+| `ads.ads_funnel_user` | 全数据集 | 1 组 | 无（下单→完成漏斗 10/9/0.9/1） |
+
+## W10–W11 ADS 应用层：用户旅程四维分析
+
+四张 ADS 表从「时间 / 流程 / 深度 / 价值」四个维度回答业务问题，是本项目从「能跑数」到「能治理口径」的关键跃迁：
+
+| 维度 | 表 | 回答的问题 | 关键口径 |
+| --- | --- | --- | --- |
+| 时间维度的漏 | `ads_user_retention` | 来了的人还回不回来？ | 按首单日切 cohort，宽进严出，窗口外填 NULL 不填 0 |
+| 流程维度的漏 | `ads_funnel_user` | 走的人走到哪一步？ | 下单宽进→已完成严出，按人不按订单 |
+| 深度的漏 | `ads_user_repurchase` | 走完的人还走不走第二遍？ | 订单数法，分母 = 当月有已完成单的用户 |
+| 价值的秤 | `ads_user_segment` | 留下来的人各值多少钱？ | 固定阈值 + 新客保护期，五档分层 |
+
+配套口径文档：
+
+- `docs/metrics.md` —— W5–W9 双口径声明 + DWS 表登记
+- `docs/ads_w10_w11_metrics.md` —— W10–W11 四张 ADS 表的口径声明（五/五·补/六/七）+ 指标登记表 + 验收四刀
+- `docs/ads-metrics-deep-dive.md` —— 用户旅程四维分析专题（面试题纲、自测 8 题、治理三原则）
+
+**口径治理是本项目区别于普通「数仓练习」的亮点**：所有指标带七列口径登记表、双口径并排、窗口外 NULL 语义、扩展列触发条件显式登记——面试官问「GMV 跌了怎么分析 / 电商用户怎么分析」时，这四张表 + 口径文档就是完整回答骨架。
 
 ## 指标口径
 
@@ -64,8 +87,16 @@ sql/
   03_dwd_order_item.sql    # 明细宽表：4 表 JOIN + 维度退化
   04_dws_user.sql          # 用户级预聚合：12 列双口径
   05_dws_product.sql       # 商品级预聚合：MAX 包维度属性
-  06_ads_sales_daily.sql   # 日 GMV 指标
-  07_ads_sales_weekly.sql  # 周 GMV 指标（ISO 周）
+  06_ads_sales_daily.sql    # 日 GMV 指标
+  07_ads_sales_weekly.sql   # 周 GMV 指标（ISO 周）
+  08_ads_user_repurchase.sql # 月度用户复购率（粘性）
+  09_ads_user_retention.sql  # 按首单日 cohort 留存率（d1/d3/d7）
+  10_ads_user_segment.sql    # 用户价值五档分层
+  11_ads_funnel_user.sql     # 下单→完成漏斗转化
+docs/
+  metrics.md                 # W5–W9 双口径声明 + DWS 表登记
+  ads_w10_w11_metrics.md     # W10–W11 四张 ADS 表口径声明 + 登记 + 验收四刀
+  ads-metrics-deep-dive.md   # 用户旅程四维分析专题（面试向）
 ```
 
 ## 环境
